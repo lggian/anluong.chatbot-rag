@@ -1,0 +1,33 @@
+# version: '3.8'
+
+services:
+  # 1. Lưu trữ file
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio3
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+
+  # 2. Vector Database cho RAG
+  chromadb:
+    image: chromadb/chroma
+    container_name: chromadb3
+    ports:
+      - "8001:8000"
+
+  # 3. Database cho Metadata (Cần cho ChunkRecord của bạn)
+  mysql:
+    image: mysql:8.0
+    container_name: mysql3
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ragwebui
+      MYSQL_USER: ragwebui
+      MYSQL_PASSWORD: ragwebui

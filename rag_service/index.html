@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success AI Bot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Đổi màu chủ đạo (ví dụ: Xanh Teal đậm) */
+            --primary-color: #cbdbd7; 
+            /* Thêm màu khi di chuột vào nút (đậm hơn màu chủ đạo một chút) */
+            --hover-color: #005f60;
+            --bg-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Launcher - Nút tròn góc màn hình */
+        /* Launcher - Căn giữa logo và bỏ chữ thừa */
+        .chat-launcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            overflow: hidden; /* Đảm bảo ảnh không tràn ra ngoài vòng tròn */
+        }
+
+        .chat-launcher img {
+            width: 70%; /* Chỉnh lại để logo nằm gọn bên trong */
+            height: 70%;
+            object-fit: contain;
+        }
+
+        /* Khung Chat - Đặt ngay trên nút tròn */
+        .chat-window {
+            position: fixed;
+            bottom: 90px; /* Cách nút tròn một khoảng vừa đủ */
+            right: 20px;
+            width: 350px;
+            height: 500px; /* Giảm chiều cao một chút cho cân đối */
+            /* ... giữ các thuộc tính khác ... */
+        }
+
+        /* Window */
+        .chat-window {
+            position: fixed;
+            bottom: 100px; /* Nâng cao lên một chút để không đè nút launcher mới */
+            right: 20px;
+            width: 380px;
+            height: 600px;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        .chat-window.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+
+        /* Header */
+        .chat-header {
+            background-color: var(--primary-color); /* Sử dụng màu mới */
+            color: rgb(0, 0, 0);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        .chat-header .close-btn { cursor: pointer; font-size: 20px; }
+
+        /* Messages */
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .message.bot { align-self: flex-start; background-color: #e4e6eb; color: #000; border-bottom-left-radius: 4px; }
+        
+        /* Tin nhắn User sử dụng màu chủ đạo mới */
+        .message.user { align-self: flex-end; background-color: var(--primary-color); color: black; border-bottom-right-radius: 4px; }
+        
+        .message.system { 
+            align-self: center; 
+            background-color: #e6fffa; 
+            /* Sử dụng màu mới cho viền và chữ hệ thống */
+            color: black; 
+            border: 1px solid var(--primary-color);
+            font-size: 13px; 
+            text-align: center;
+            opacity: 0.8;
+        }
+        .message.error { 
+            align-self: center; 
+            background-color: #fff1f0; 
+            color: #cf1322; 
+            font-size: 13px; 
+            border: 1px solid #ffa39e;
+            text-align: center;
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            background: white;
+            align-items: center;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            background-color: #f0f2f5;
+            margin: 0 10px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color); /* Sử dụng màu mới cho các nút icon */
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+        /* --- THAY ĐỔI MỚI: Màu khi hover vào icon dùng biến màu mới --- */
+        .icon-btn:hover { color: var(--hover-color); }
+        
+        /* Hidden File Input */
+        #fileInput { display: none; }
+
+        /* Status Indicator */
+        .status-indicator {
+            font-size: 12px;
+            color: #888;
+            margin-left: 15px;
+            margin-bottom: 5px;
+            display: none;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- <div class="chat-launcher" onclick="toggleChat()">
+        <img src="/img/logosss.png" alt="Logo Chatbot">
+    </div> -->
+    <div class="chat-launcher" onclick="toggleChat()">
+        <img src="img/logosss.png" alt="" onerror="this.src='https://cdn-icons-png.flaticon.com/512/8943/8943377.png'">
+    </div>
+
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <span>HR Assistant</span>
+            <span class="close-btn" onclick="toggleChat()">&times;</span>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">Chào bạn! Hãy đính kèm các file PDF (📎) để tôi học, sau đó tôi sẽ trả lời dựa trên chúng.</div>
+        </div>
+        
+        <div class="status-indicator" id="statusIndicator"></div>
+
+        <div class="chat-input-area">
+            <input type="file" id="fileInput" multiple accept=".pdf" style="display:none">
+            
+            <button type="button" class="icon-btn" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-paperclip"></i>
+            </button>
+
+            <input type="text" id="userInput" placeholder="Nhập câu hỏi..." onkeypress="handleKeyPress(event)">
+            
+            <button type="button" class="icon-btn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        <!-- <div class="chat-input-area">
+            <input type="file" id="fileInput" multiple accept=".pdf" style="display:none" onchange="handleFileUpload(event)">
+            <button type="button" class="icon-btn" onclick="document.getElementById('fileInput').click()" title="Đính kèm PDF">
+                <i class="fas fa-paperclip"></i>
+            </button>
+
+            <input type="text" id="userInput" placeholder="Nhập câu hỏi..." onkeypress="handleKeyPress(event)">
+            
+            <button type="button" class="icon-btn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div> -->
+    </div>
+
+    <script>
+        // Tự động nhận diện origin để tránh lỗi CORS giữa localhost và 127.0.0.1
+        const API_URL = window.location.origin;
+
+        // --- CẤU HÌNH SỰ KIỆN ---
+        
+        // Lắng nghe sự kiện chọn file (Chỉ một listener duy nhất)
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        document.getElementById('userInput').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                sendMessage();
+            }
+        });
+
+        // Xử lý nhấn phím Enter chuyên nghiệp
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                sendMessage();
+            }
+        }
+
+        // Đóng/Mở cửa sổ chat
+        function toggleChat() {
+            const w = document.getElementById('chatWindow');
+            w.classList.toggle('active');
+            if (w.classList.contains('active')) {
+                document.getElementById('userInput').focus();
+            }
+        }
+
+        // --- CÁC HÀM XỬ LÝ CHÍNH ---
+
+        /**
+         * Xử lý tải lên và phân tích tài liệu PDF
+         */
+        async function handleFileUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const formData = new FormData();
+            for (const file of files) {
+                formData.append("files", file);
+            }
+
+            // Lấy thông số cấu hình (nếu giao diện có các input này, nếu không mặc định 800)
+            const size = document.getElementById('chunkSize')?.value || 800;
+            const strategy = document.getElementById('strategy')?.value || 'fixed';
+
+            appendMessage(`⏳ Đang tải lên và phân tích ${files.length} tài liệu...`, 'system');
+
+            try {
+                const response = await fetch(`${API_URL}/upload?size=${size}&strategy=${strategy}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    appendMessage(`✅ <b>Thành công!</b> Bot đã học nội dung từ file của bạn.`, 'system');
+                } else {
+                    const data = await response.json();
+                    appendMessage(`❌ Lỗi: ${data.detail || 'Không thể xử lý file'}`, 'error');
+                }
+            } catch (error) {
+                // Lỗi kết nối thường do server chưa bật hoặc lỗi CORS
+                appendMessage(`❌ Lỗi kết nối server. Hãy dùng địa chỉ 127.0.0.1:8000 thay vì localhost.`, 'error');
+            } finally {
+                event.target.value = ''; // Reset để có thể chọn lại cùng 1 file
+            }
+        }
+
+        /**
+         * Gửi tin nhắn và nhận phản hồi từ AI
+         */
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // Hiển thị tin nhắn người dùng
+            appendMessage(text, 'user');
+            input.value = '';
+            
+            setStatus('Bot đang suy nghĩ...');
+
+            try {
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+
+                if (!response.ok) throw new Error("Server error");
+
+                const data = await response.json();
+                appendMessage(data.response, 'bot');
+            } catch (error) {
+                appendMessage("❌ Không thể kết nối với Server AI.", 'error');
+            } finally {
+                setStatus('', false);
+            }
+        }
+
+        // --- HÀM BỔ TRỢ GIAO DIỆN ---
+
+        function appendMessage(text, type) {
+            const container = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `message ${type}`;
+            // Hỗ trợ hiển thị xuống dòng và HTML cơ bản (như thẻ <b>)
+            div.innerHTML = text.replace(/\n/g, "<br>");
+            
+            container.appendChild(div);
+            
+            // Cuộn mượt xuống tin nhắn mới nhất
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        function setStatus(msg, show = true) {
+            const el = document.getElementById('statusIndicator');
+            if (el) {
+                el.innerText = msg;
+                el.style.display = show ? 'block' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
