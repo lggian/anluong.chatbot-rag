@@ -31,7 +31,7 @@ python main.py
 ```
 -------------------------------------------------------
 
-This project has been formed because my manager (as my mentor), who instructed me in my internship as an AI Engineer, wants me to develop a chatbot for the Q&A policy and JDs/CVs (internal information).
+This project has been formed because my manager (as my mentor), who instructed me in my internship as an AI Engineer, wants me to develop a chatbot for the Q&A policy and JDs/CVs (internal information so will be running 100% in local).
 
 So bad, this project won’t see the light ( =))) ) because my company personnel reduction and my mentor are too busy to review my code. For the most part, it’s not finished yet. ( =))) )
 
