@@ -18,7 +18,7 @@ python main.py
 ```
 
 3. Create a new (.venv) for the rag_service folder. You need to run two (.venv) files in a way that prevents them from getting mixed up!
-If it is mixed up, you will create (.venv) from step1 and step3 again (take off your time)
+If it is mixed up, you will create (.venv) from step1 and step3 again (wasted your time)
 
 4. Import -r requirement.txt of the rag_service folder:
 ```bash
