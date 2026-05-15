@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 3.  Run main.py in the ollama_service folder:
 ```bash
-python main.py
+python -m uvicorn main:app --reload
 ```
 
 3. Create a new (.venv) for the rag_service folder. You need to run two (.venv) files in a way that prevents them from getting mixed up!
@@ -27,7 +27,7 @@ pip install -r requirements.txt
 
 5.  Run main.py in the rag_service folder: (It often has a bug at this line if you are wrong at step3, which I had warned about earlier)
 ```bash
-python main.py
+python -m uvicorn main:app --reload
 ```
 -------------------------------------------------------
 
